@@ -8,7 +8,6 @@
 - **Real time**: `seq` comes from Redis `INCR` per workspace; frames are stored in MongoDB; a Redis publish wakes every copy. Each socket *pulls* `seq > last` from MongoDB in order, so it never reorders, and `after=N` replay is the same code path.
 - **Auth**: OIDC code + PKCE, with state and verifier in Redis (login and callback may land on different copies). Sessions live in Redis behind an httpOnly SameSite=Lax cookie. Workspaces and roles come from `/userinfo`.
 - **Frontend**: login, workspace switcher, open/closed/all filter, paginated list, thread, claim/release/close/reopen, reply with live status, auto-reconnecting socket with `after=`. Replies use a `client_ref` made in the browser, so a retried POST is still one reply.
-
 - **Private notes, end-to-end encrypted**: each browser derives an AES-GCM key from a team passphrase (PBKDF2). The server stores only ciphertext + iv. See `PROTOCOL.md`.
 - **One origin**: the API server also serves the built React app, so `http://localhost:4000` is the whole product.
 
@@ -22,6 +21,9 @@
 - `POST /__grader/reply` to an unknown workspace → `404`; missing fields → `400`.
 - Messages in a thread are ordered by `occurred_at` (inbound) and send time (our replies).
 - Any other Pigeon 4xx on send (not 429) is final → `failed`.
+
+## Check results
+- `npm run check:full`: 75/75 (levels 1, 2, 3, 5). Also 75/75 with 3 copies, 40 s chaos, 30 replies and a 15 s outage (`SB_PROFILE`). Level 4 cannot be run locally; I followed the PIGEON.md table.
 
 ## Known to be wrong or weak
 - **Lost status frames on crash**: if the process dies between storing a status or claim and storing its realtime frame, that frame is lost (the data is right; only the live push is missing). Inbound messages are covered by a `framed` flag; status and claim frames are not.
