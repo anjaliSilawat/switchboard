@@ -48,7 +48,8 @@ export async function pigeonWebhook(req: Request, res: Response) {
       await storeInbound(workspace, d.message_id, d.from, String(d.text ?? ''), isNaN(+occurred) ? new Date() : occurred);
     } else if (evt.type === 'message.status') {
       const d = evt.data ?? {};
-      if (typeof d.client_ref !== 'string' || !(d.status in STATUS_RANK)) return res.status(400).json({ error: 'bad data' });
+      // a status we do not know (Pigeon may add some) is acknowledged and ignored
+      if (typeof d.client_ref !== 'string' || !Object.hasOwn(STATUS_RANK, d.status)) return res.status(200).json({ ignored: 'status' });
       await applyStatus(workspace, d.client_ref, d.status as Status, d.message_id);
     }
     // unknown type: acknowledge and ignore
