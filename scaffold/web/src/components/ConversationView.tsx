@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, type Me, type Message } from '../api';
 import { NotesPanel } from './NotesPanel';
+import { avatarColor, initials } from '../avatar';
 
 interface ThreadResponse {
   conversation: { assignee: string | null; assigneeName: string | null; state: 'open' | 'closed' } | null;
@@ -86,7 +87,9 @@ export function ConversationView({ workspace, contact, me, refreshKey, onChanged
     <div className="conversation">
       <div className="conversation-main">
         <div className="conversation-head">
-          <span className="avatar">{contact.slice(-2)}</span>
+          <span className="avatar" style={{ background: avatarColor(contact) }}>
+            {initials(contact)}
+          </span>
           <div>
             <div className="contact">{contact}</div>
             <div className="muted small">
@@ -118,17 +121,25 @@ export function ConversationView({ workspace, contact, me, refreshKey, onChanged
         </div>
 
         <div className="messages">
-          {thread?.messages.map((m) => (
-            <div key={m.dir + m.id} className={m.dir === 'in' ? 'bubble-row in' : 'bubble-row out'}>
-              <div className="bubble">
-                <div>{m.text}</div>
-                <div className="bubble-meta">
-                  {new Date(m.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  {m.dir === 'out' && <span className={`status ${m.status}`}>{m.status}</span>}
+          {thread?.messages.map((m, i) => {
+            // show a small date label when the day changes
+            const day = new Date(m.at).toDateString();
+            const newDay = i === 0 || day !== new Date(thread.messages[i - 1].at).toDateString();
+            return (
+              <div key={m.dir + m.id} style={{ display: 'contents' }}>
+                {newDay && <div className="day">{day === new Date().toDateString() ? 'Today' : day}</div>}
+                <div className={m.dir === 'in' ? 'bubble-row in' : 'bubble-row out'}>
+                  <div className="bubble">
+                    <div>{m.text}</div>
+                    <div className="bubble-meta">
+                      {new Date(m.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {m.dir === 'out' && <span className={`status ${m.status}`}>{m.status}</span>}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div ref={bottomRef} />
         </div>
 

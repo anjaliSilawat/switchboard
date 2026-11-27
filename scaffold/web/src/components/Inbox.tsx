@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, type Conversation, type Me } from '../api';
 import { useLiveUpdates } from '../useLiveUpdates';
 import { ConversationView } from './ConversationView';
+import { avatarColor, initials } from '../avatar';
 
 type Filter = 'open' | 'closed' | '';
 
@@ -51,6 +52,10 @@ export function Inbox({ workspace, me }: { workspace: string; me: Me }) {
     <div className="inbox">
       <aside className="sidebar">
         <div className="sidebar-head">
+          <div className="sidebar-title">
+            <h3>Inbox</h3>
+            <span className={online ? 'live on' : 'live off'}>{online ? 'Live' : 'Reconnecting'}</span>
+          </div>
           <div className="tabs">
             {(['open', 'closed', ''] as Filter[]).map((f) => (
               <button key={f} className={filter === f ? 'tab active' : 'tab'} onClick={() => setFilter(f)}>
@@ -58,15 +63,16 @@ export function Inbox({ workspace, me }: { workspace: string; me: Me }) {
               </button>
             ))}
           </div>
-          <span className={online ? 'live on' : 'live off'}>{online ? 'Live' : 'Reconnecting…'}</span>
         </div>
 
         <div className="conversation-list">
-          {conversations.length === 0 && <p className="empty small">No conversations here yet.</p>}
+          {conversations.length === 0 && <p className="list-empty">No conversations here yet.</p>}
 
           {conversations.map((c) => (
             <button key={c.contact} className={c.contact === selected ? 'conversation-row selected' : 'conversation-row'} onClick={() => setSelected(c.contact)}>
-              <span className="avatar">{c.contact.slice(-2)}</span>
+              <span className="avatar" style={{ background: avatarColor(c.contact) }}>
+                {initials(c.contact)}
+              </span>
               <span className="row-main">
                 <span className="row-top">
                   <strong>{c.contact}</strong>
@@ -74,13 +80,13 @@ export function Inbox({ workspace, me }: { workspace: string; me: Me }) {
                 </span>
                 <span className="row-bottom">
                   {c.assignee ? (
-                    <span className={c.assignee === me.sub ? 'pill mine' : 'pill taken'}>
+                    <span className={c.assignee === me.sub ? 'tag mine' : 'tag taken'}>
                       {c.assignee === me.sub ? 'You' : c.assigneeName ?? c.assignee}
                     </span>
                   ) : (
-                    <span className="pill free">Unassigned</span>
+                    <span className="tag free">Unassigned</span>
                   )}
-                  {c.state === 'closed' && <span className="pill closed">Closed</span>}
+                  {c.state === 'closed' && <span className="tag closed">Closed</span>}
                 </span>
               </span>
             </button>
@@ -99,9 +105,13 @@ export function Inbox({ workspace, me }: { workspace: string; me: Me }) {
           <ConversationView workspace={workspace} contact={selected} me={me} refreshKey={refreshKey} onChanged={loadFirstPage} />
         ) : (
           <div className="empty">
-            <div className="empty-icon">💬</div>
+            <div className="empty-art">
+              <span />
+              <span />
+              <span />
+            </div>
             <h3>Pick a conversation</h3>
-            <p className="muted">New customer messages show up on the left as they arrive.</p>
+            <p className="muted">New customer messages appear on the left the moment they arrive.</p>
           </div>
         )}
       </main>

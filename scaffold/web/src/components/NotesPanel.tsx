@@ -50,14 +50,17 @@ export function NotesPanel({ workspace, contact, refreshKey }: { workspace: stri
   return (
     <aside className="notes">
       <div className="notes-head">
-        <span>🔒 Private notes</span>
-        <span className="muted small">only your team can read these</span>
+        <strong>
+          <span className="lock">●</span>Private notes
+        </strong>
+        <span className="muted small">Encrypted · only your team can read</span>
       </div>
 
       {!key ? (
         <form className="unlock" onSubmit={unlock}>
-          <p className="muted small">Enter your team passphrase to read and write notes. It never leaves your browser.</p>
-          <input type="password" value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder="Team passphrase (min 8 characters)" />
+          <div className="unlock-art">🔑</div>
+          <p className="muted small" style={{ textAlign: 'center', margin: 0 }}>Enter your team passphrase to read and write notes. It never leaves your browser.</p>
+          <input className="field" type="password" value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder="Team passphrase (min 8 characters)" />
           <button className="btn primary wide" type="submit" disabled={passphrase.length < 8}>
             Unlock notes
           </button>
@@ -76,7 +79,7 @@ export function NotesPanel({ workspace, contact, refreshKey }: { workspace: stri
             ))}
           </div>
           <form className="note-form" onSubmit={addNote}>
-            <textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Write a note for your teammates…" rows={3} />
+            <textarea className="field" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Write a note for your teammates…" rows={3} />
             <button className="btn primary wide" type="submit" disabled={!draft.trim()}>
               Add note
             </button>

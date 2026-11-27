@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, type Me } from './api';
 import { LoginPage } from './components/LoginPage';
 import { Inbox } from './components/Inbox';
+import { avatarColor, initials } from './avatar';
 
 export function App() {
   // undefined = still loading, null = not signed in
@@ -32,23 +33,30 @@ export function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          <span className="logo">S</span>
-          <span>Switchboard</span>
+          <span className="logo" />
+          Switchboard
         </div>
 
-        <select className="workspace-select" value={workspace} onChange={(e) => setWorkspace(e.target.value)}>
-          {me.workspaces.map((w) => (
-            <option key={w.id} value={w.id}>
-              {w.id}
-            </option>
-          ))}
-        </select>
-        {role && <span className={`role-badge ${role}`}>{role}</span>}
+        <div className="ws-switch">
+          <select value={workspace} onChange={(e) => setWorkspace(e.target.value)}>
+            {me.workspaces.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.id}
+              </option>
+            ))}
+          </select>
+          {role && <span className={`role ${role}`}>{role}</span>}
+        </div>
 
         <div className="topbar-right">
-          <span className="avatar small">{initials(me.name ?? me.sub)}</span>
-          <span className="user-name">{me.name ?? me.sub}</span>
-          <button className="btn ghost" onClick={signOut}>
+          <div className="me">
+            <strong>{me.name ?? me.sub}</strong>
+            <span>Support team</span>
+          </div>
+          <span className="avatar round small" style={{ background: avatarColor(me.sub) }}>
+            {initials(me.name ?? me.sub)}
+          </span>
+          <button className="btn on-dark" onClick={signOut}>
             Sign out
           </button>
         </div>
@@ -62,9 +70,4 @@ export function App() {
       )}
     </div>
   );
-}
-
-export function initials(name: string) {
-  const parts = name.replace(/[^A-Za-z ]/g, ' ').trim().split(/\s+/);
-  return ((parts[0]?.[0] ?? '?') + (parts[1]?.[0] ?? '')).toUpperCase();
 }
