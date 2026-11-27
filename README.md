@@ -12,14 +12,12 @@ Requirements: Node 22 or newer, and Docker.
 npm run up                 # MongoDB, Redis, Pigeon, IdP (Docker)
 npm run doctor             # every port should PASS
 npm run scaffold:install   # server + web dependencies
-npm run scaffold:server    # API on http://localhost:4000 (PORT overrides)
-npm run scaffold:web       # React app on http://localhost:5173
+npm run app                # builds the React app and serves everything on http://localhost:4000
 ```
 
-Open http://localhost:5173 and click **Sign in**. The IdP lists its test users (for example Ben in `ws_acme`, or Eli in both workspaces).
+Open **http://localhost:4000** and click **Sign in**. The IdP lists its test users (for example Ben in `ws_acme`, or Eli in both workspaces). The server serves the built React app itself, so there is one origin and nothing else needs a free port.
 
-If 5173 is taken on your machine, run the web app on another port and tell the server where to send the browser after login:
-`WEB_PORT=5174 npm run scaffold:web` and `WEB_ORIGIN=http://localhost:5174 npm run scaffold:server`.
+For UI work with hot reload: `npm run scaffold:server` and `npm run scaffold:web` (Vite on 5173; after login the server sends you to `WEB_ORIGIN`, which is 5173 by default. If 5173 is taken, use `WEB_PORT=5174 npm run scaffold:web` and set `WEB_ORIGIN=http://localhost:5174`). Delete `scaffold/web/dist` while using Vite, or login returns you to :4000.
 
 All configuration comes from the environment (see `.env.example`). The defaults match the harness, so no `.env` file is needed.
 

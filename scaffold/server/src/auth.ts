@@ -2,6 +2,7 @@
 // Login state (PKCE verifier, nonce) and sessions live in Redis, so /auth/login
 // and /auth/callback may hit different server copies.
 import { createHash, randomBytes } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import type { NextFunction, Request, Response } from 'express';
 import { config } from './config.js';
 import { getRedis } from './redis.js';
@@ -105,7 +106,8 @@ export async function callback(req: Request, res: Response) {
   const id = b64url(randomBytes(32));
   await getRedis().set(`sess:${id}`, JSON.stringify(session), 'EX', SESSION_TTL_S);
   res.cookie(COOKIE, id, { httpOnly: true, sameSite: 'lax', secure: secureCookie(), path: '/', maxAge: SESSION_TTL_S * 1000 });
-  res.redirect(302, config.webOrigin);
+  // back to the app: this server when it serves the built UI, else the Vite dev server
+  res.redirect(302, existsSync(new URL('../../web/dist/index.html', import.meta.url)) ? '/' : config.webOrigin);
 }
 
 export async function logout(req: Request, res: Response) {

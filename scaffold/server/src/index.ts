@@ -1,6 +1,8 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { createServer } from 'node:http';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
 import { getDb } from './db.js';
 import { getRedis } from './redis.js';
@@ -103,6 +105,14 @@ api.post('/conversations/:contact/reopen', requireMember, wrap(async (req, res) 
   res.status((await setState(String(req.query.workspace), req.params.contact, 'open')) ? 200 : 404).json({});
 }));
 app.use('/api', api);
+
+// The built React app (npm run web:build) is served from this server, so
+// http://localhost:<PORT> is the whole product on one origin.
+const webDist = fileURLToPath(new URL('../../web/dist/', import.meta.url));
+if (existsSync(webDist)) {
+  app.use(express.static(webDist, { index: 'index.html' }));
+  app.get(/^\/(?!api|auth|ws|__grader|webhooks|healthz).*/, (_req, res) => res.sendFile('index.html', { root: webDist }));
+}
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
