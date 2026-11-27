@@ -31,3 +31,6 @@
 - **`seq` lives in Redis**: if Redis loses its data, `seq` restarts and clients reconnecting with an old `after=` miss frames. It could be rebuilt from the highest `seq` in MongoDB at boot.
 - **No CSRF token**: we rely on SameSite=Lax plus JSON bodies. The id_token signature is not verified; identity comes from userinfo over the server-to-server channel.
 - After `/__grader/reset`, already-open sockets keep their old `last` and stay silent until they reconnect.
+
+## AI logs
+- `ai-logs/` holds **trimmed** transcripts, not the raw export (the brief asks for unedited logs; I chose to remove tool output, screenshots and personal details). Prompts and AI replies are kept in full. The full raw exports are available on request.
