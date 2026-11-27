@@ -9,7 +9,7 @@ import { getRedis } from './redis.js';
 import { ensureIndexes } from './store.js';
 import { pigeonWebhook } from './webhook.js';
 import { enqueueReply, startOutboxWorker, UnknownWorkspace } from './outbox.js';
-import { claim, listConversations, release, resetAll, setState, snapshot, thread } from './inbox.js';
+import { addNote, claim, listConversations, listNotes, release, resetAll, setState, snapshot, thread } from './inbox.js';
 import { callback, login, logout, requireMember, requireSession } from './auth.js';
 import { startRealtime } from './realtime.js';
 
@@ -92,7 +92,7 @@ api.post('/conversations/:contact/reply', requireMember, wrap(async (req, res) =
   res.status(202).json({ client_ref: ref });
 }));
 api.post('/conversations/:contact/claim', requireMember, wrap(async (req, res) => {
-  const ok = await claim(String(req.query.workspace), req.params.contact, req.session!.sub);
+  const ok = await claim(String(req.query.workspace), req.params.contact, req.session!.sub, req.session!.name ?? null);
   res.status(ok ? 200 : 409).json({ ok });
 }));
 api.post('/conversations/:contact/release', requireMember, wrap(async (req, res) => {
@@ -103,6 +103,17 @@ api.post('/conversations/:contact/close', requireMember, wrap(async (req, res) =
 }));
 api.post('/conversations/:contact/reopen', requireMember, wrap(async (req, res) => {
   res.status((await setState(String(req.query.workspace), req.params.contact, 'open')) ? 200 : 404).json({});
+}));
+// Private notes: the body is already encrypted by the browser.
+api.get('/conversations/:contact/notes', requireMember, wrap(async (req, res) => {
+  res.json({ notes: await listNotes(String(req.query.workspace), req.params.contact) });
+}));
+api.post('/conversations/:contact/notes', requireMember, wrap(async (req, res) => {
+  const { ciphertext, iv } = req.body ?? {};
+  const isBase64 = (v: unknown, max: number) => typeof v === 'string' && v.length > 0 && v.length <= max && /^[A-Za-z0-9+/=]+$/.test(v);
+  if (!isBase64(ciphertext, 20000) || !isBase64(iv, 32)) return res.status(400).json({ error: 'ciphertext and iv (base64) required' });
+  await addNote(String(req.query.workspace), req.params.contact, req.session!.sub, req.session!.name ?? null, ciphertext, iv);
+  res.status(201).json({ ok: true });
 }));
 app.use('/api', api);
 

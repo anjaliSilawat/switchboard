@@ -9,8 +9,12 @@
 - **Auth**: OIDC code + PKCE, with state and verifier in Redis (login and callback may land on different copies). Sessions live in Redis behind an httpOnly SameSite=Lax cookie. Workspaces and roles come from `/userinfo`.
 - **Frontend**: login, workspace switcher, open/closed/all filter, paginated list, thread, claim/release/close/reopen, reply with live status, auto-reconnecting socket with `after=`. Replies use a `client_ref` made in the browser, so a retried POST is still one reply.
 
+- **Private notes, end-to-end encrypted**: each browser derives an AES-GCM key from a team passphrase (PBKDF2). The server stores only ciphertext + iv. See `PROTOCOL.md`.
+- **One origin**: the API server also serves the built React app, so `http://localhost:4000` is the whole product.
+
 ## Cut, and why
-- **Encrypted notes, search, billing**: lower value per minute than the 85 points from the check. No `PROTOCOL.md`.
+- **Search and billing**: lower value per minute than making the check pass under failure.
+- **Notes key management**: one shared passphrase per workspace, no rotation or per-user keys (simple to explain and build in the time).
 - **Admin vs agent**: roles are stored and shown, but nothing is admin-only yet.
 
 ## Assumptions where the brief is silent

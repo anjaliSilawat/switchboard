@@ -41,6 +41,7 @@ export interface Conversation {
   workspace: string;
   contact: string;
   assignee: string | null;
+  assigneeName?: string | null; // display name, set when claimed from the UI
   state: 'open' | 'closed';
   lastActivityAt: Date;
 }
@@ -65,6 +66,7 @@ export async function ensureIndexes() {
   await (await col.outbound()).createIndex({ workspace: 1, contact: 1, createdAt: 1 });
   await (await col.conversations()).createIndex({ workspace: 1, lastActivityAt: -1, _id: -1 });
   await (await col.frames()).createIndex({ workspace: 1, seq: 1 }, { unique: true });
+  await (await col.notes()).createIndex({ workspace: 1, contact: 1, createdAt: 1 });
 }
 
 export const isDupKey = (e: unknown) => (e as { code?: number })?.code === 11000;

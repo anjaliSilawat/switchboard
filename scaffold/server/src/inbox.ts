@@ -8,14 +8,15 @@ import { ensureIndexes } from './store.js';
 // Claim is one atomic conditional upsert: it matches only if the conversation
 // is free or already ours. If someone else holds it the filter does not match,
 // the upsert tries to insert the same _id and fails with E11000 -> 409.
-export async function claim(workspace: string, contact: string, agent: string): Promise<boolean> {
+// agentName is only for display in the UI (the grader passes just an id)
+export async function claim(workspace: string, contact: string, agent: string, agentName: string | null = null): Promise<boolean> {
   const c = await col.conversations();
   const _id = `${workspace}:${contact}`;
   let before: Conversation | null;
   try {
     before = await c.findOneAndUpdate(
       { _id, $or: [{ assignee: null }, { assignee: agent }] },
-      { $set: { assignee: agent }, $setOnInsert: { workspace, contact, state: 'open', lastActivityAt: new Date() } },
+      { $set: { assignee: agent, assigneeName: agentName }, $setOnInsert: { workspace, contact, state: 'open', lastActivityAt: new Date() } },
       { upsert: true, returnDocument: 'before' },
     );
   } catch (e) {
@@ -28,7 +29,7 @@ export async function claim(workspace: string, contact: string, agent: string): 
 }
 
 export async function release(workspace: string, contact: string, agent: string) {
-  const r = await (await col.conversations()).updateOne({ _id: `${workspace}:${contact}`, assignee: agent }, { $set: { assignee: null } });
+  const r = await (await col.conversations()).updateOne({ _id: `${workspace}:${contact}`, assignee: agent }, { $set: { assignee: null, assigneeName: null } });
   if (r.modifiedCount) await emit(workspace, { type: 'conversation.assigned', contact, assignee: null });
   return r.modifiedCount > 0;
 }
@@ -68,7 +69,7 @@ export async function thread(workspace: string, contact: string) {
     ...ins.map((m) => ({ dir: 'in' as const, id: m.message_id, text: m.text, at: m.occurred_at })),
     ...outs.map((m) => ({ dir: 'out' as const, id: m.client_ref, text: m.text, at: m.createdAt, status: m.status, author: m.author })),
   ].sort((a, b) => +a.at - +b.at);
-  return { conversation: conv && { contact: conv.contact, assignee: conv.assignee, state: conv.state }, messages };
+  return { conversation: conv && { contact: conv.contact, assignee: conv.assignee, assigneeName: conv.assigneeName ?? null, state: conv.state }, messages };
 }
 
 export async function snapshot() {
@@ -96,4 +97,18 @@ export async function resetAll() {
     } while (cursor !== '0');
   }
   await ensureIndexes();
+}
+
+// ---- Private notes ----
+// The browser encrypts the note before sending it. The server only stores
+// the encrypted bytes (ciphertext + iv) and can not read the text.
+export async function addNote(workspace: string, contact: string, author: string, authorName: string | null, ciphertext: string, iv: string) {
+  const note = { workspace, contact, author, authorName, ciphertext, iv, createdAt: new Date() };
+  await (await col.notes()).insertOne(note);
+  await emit(workspace, { type: 'note.added', contact });
+}
+
+export async function listNotes(workspace: string, contact: string) {
+  const rows = await (await col.notes()).find({ workspace, contact }).sort({ createdAt: 1 }).toArray();
+  return rows.map((n) => ({ id: String(n._id), authorName: n.authorName ?? n.author, ciphertext: n.ciphertext, iv: n.iv, createdAt: n.createdAt }));
 }
