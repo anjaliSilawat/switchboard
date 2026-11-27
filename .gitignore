@@ -4,3 +4,4 @@ dist/
 .check-logs/
 dump.rdb
 .DS_Store
+.claude/
