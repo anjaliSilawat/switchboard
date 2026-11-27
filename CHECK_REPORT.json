@@ -1,13 +1,13 @@
 {
   "profile": "full",
-  "startedAt": "2026-11-27T13:03:40.850Z",
+  "startedAt": "2026-11-27T13:45:55.064Z",
   "checks": [
     {
       "level": 1,
       "id": "inbound_complete",
       "max": 4,
       "got": 4,
-      "detail": "176 of 176 genuine messages stored"
+      "detail": "174 of 174 genuine messages stored"
     },
     {
       "level": 1,
@@ -91,7 +91,7 @@
       "id": "crash_inbound_complete",
       "max": 3,
       "got": 3,
-      "detail": "killed at 8 s, down 4 s: 184 of 184 genuine messages stored"
+      "detail": "killed at 10 s, down 4 s: 180 of 180 genuine messages stored"
     },
     {
       "level": 2,
@@ -133,7 +133,7 @@
       "id": "multi_inbound_complete",
       "max": 2,
       "got": 2,
-      "detail": "172 of 172 genuine messages stored"
+      "detail": "178 of 178 genuine messages stored"
     },
     {
       "level": 3,
@@ -247,5 +247,5 @@
       "max": 15
     }
   },
-  "finishedAt": "2026-11-27T13:07:05.641Z"
+  "finishedAt": "2026-11-27T13:49:18.344Z"
 }
