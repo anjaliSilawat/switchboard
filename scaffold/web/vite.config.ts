@@ -8,7 +8,8 @@ const server = 'http://localhost:4000';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173,
+    port: Number(process.env.WEB_PORT ?? 5173),
+    strictPort: true,
     proxy: {
       '/api': server,
       '/auth': server,
