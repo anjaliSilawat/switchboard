@@ -174,6 +174,13 @@ h1, h2, h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 600; letter-s
 .empty-art span:nth-child(2) { right: 0; top: 22px; width: 54px; background: var(--ink); }
 .empty-art span:nth-child(3) { left: 10px; top: 44px; width: 40px; background: var(--accent); }
 
+.stats { display: grid; grid-template-columns: repeat(3, minmax(120px, 160px)); gap: 12px; margin-top: 28px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; text-align: left; box-shadow: var(--shadow); border-top: 3px solid var(--ink); }
+.stat strong { display: block; font-family: 'Fraunces', Georgia, serif; font-size: 28px; line-height: 1.1; }
+.stat span { color: var(--muted); font-size: 12px; font-weight: 600; }
+.stat.warn { border-top-color: #e9a23b; }
+.stat.good { border-top-color: var(--green); }
+
 /* ---------- notes ---------- */
 .notes { width: 300px; flex: none; background: var(--panel); border-left: 1px solid var(--line); display: flex; flex-direction: column; }
 .notes-head { padding: 14px 16px; height: 68px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; }

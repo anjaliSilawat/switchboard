@@ -110,8 +110,24 @@ export function Inbox({ workspace, me }: { workspace: string; me: Me }) {
               <span />
               <span />
             </div>
-            <h3>Pick a conversation</h3>
+            <h3>Hi {firstName(me)}, pick a conversation</h3>
             <p className="muted">New customer messages appear on the left the moment they arrive.</p>
+
+            {/* quick overview, counted from the conversations already loaded */}
+            <div className="stats">
+              <div className="stat">
+                <strong>{conversations.filter((c) => c.state === 'open').length}</strong>
+                <span>Open</span>
+              </div>
+              <div className="stat warn">
+                <strong>{conversations.filter((c) => c.state === 'open' && !c.assignee).length}</strong>
+                <span>Waiting for someone</span>
+              </div>
+              <div className="stat good">
+                <strong>{conversations.filter((c) => c.assignee === me.sub).length}</strong>
+                <span>Assigned to you</span>
+              </div>
+            </div>
           </div>
         )}
       </main>
@@ -125,3 +141,6 @@ function formatTime(iso: string) {
   return sameDay ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString();
 }
 
+function firstName(me: Me) {
+  return (me.name ?? me.sub).split(' ')[0];
+}
